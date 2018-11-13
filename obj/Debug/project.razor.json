@@ -1,0 +1,14 @@
+{
+  "ProjectFilePath": "c:\\Users\\55678\\Desktop\\CA1\\CA\\CA\\CA.csproj",
+  "TargetFramework": "v4.6.1",
+  "TagHelpers": [],
+  "Configuration": {
+    "ConfigurationName": "UnsupportedRazor",
+    "LanguageVersion": "1.0",
+    "Extensions": [
+      {
+        "ExtensionName": "UnsupportedRazorExtension"
+      }
+    ]
+  }
+}
