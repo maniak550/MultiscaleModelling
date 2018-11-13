@@ -433,7 +433,103 @@ namespace CA
             Reset();
         }
 
-    
+        // Eksport to pliku tekstowego
+        private void ExportToTxtButton_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+
+            saveFileDialog.Filter = "txt files (*.txt)|*.txt";
+            saveFileDialog.RestoreDirectory = true;
+
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                StringBuilder sb = new StringBuilder();
+                for (int x = 0; x < GRID_DIM; x++)
+                {
+                    for (int y = 0; y < GRID_DIM; y++)
+                    {
+                        sb.AppendFormat(
+                            "{0} {1} {2} {3} {4} {5}\n",
+                            x,
+                            y,
+                            (int)grid[x, y].type,
+                            grid[x, y].color.R,
+                            grid[x, y].color.G,
+                            grid[x, y].color.B);
+                    }
+                }
+                File.WriteAllText(saveFileDialog.FileName, sb.ToString());
+            }
+        }
+
+        // Eksport to pliku bmp
+        private void exportToBmpButton_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+
+            saveFileDialog.Filter = "bmp files (*.bmp)|*.bmp";
+            saveFileDialog.RestoreDirectory = true;
+
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                Graphics graphics = gridPanel.CreateGraphics();
+                Bitmap bitmap = new Bitmap(gridPanel.Width, gridPanel.Height);
+                gridPanel.DrawToBitmap(bitmap, new Rectangle(0, 0, gridPanel.Width, gridPanel.Height));
+                bitmap.Save(saveFileDialog.FileName);
+            }
+        }
+
+        // Import z pliku tekstowego
+        private void importFromBmpButton_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "bmp files (*.bmp)|*.bmp";
+            openFileDialog.RestoreDirectory = true;
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                Bitmap bitmap = new Bitmap(openFileDialog.FileName);
+
+                for (int x = 0; x < GRID_DIM; x++)
+                {
+                    for (int y = 0; y < GRID_DIM; y++)
+                    {
+                        grid[x, y].color = bitmap.GetPixel(x, y);
+                    }
+                }
+                gridPanel.Refresh();
+            }
+        }
+
+        // Import z pliku bmp
+        private void importFromTxtButton_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "txt files (*.txt)|*.txt";
+            openFileDialog.RestoreDirectory = true;
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                string[] lines = File.ReadAllLines(openFileDialog.FileName);
+
+                int i = 0;
+
+                for (int x = 0; x < GRID_DIM; x++)
+                {
+                    for (int y = 0; y < GRID_DIM; y++)
+                    {
+                        string line = lines[i];
+                        string[] values = line.Split();
+                        grid[x, y].type = (CellType)int.Parse(values[2]);
+                        grid[x, y].color = Color.FromArgb(
+                            int.Parse(values[3]),
+                            int.Parse(values[4]),
+                            int.Parse(values[5]));
+                        i++;
+                    }
+                }
+                gridPanel.Refresh();
+            }
         }
     }
 }
