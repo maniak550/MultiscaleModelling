@@ -97,7 +97,7 @@ namespace CA
         }
 
         // Inicjalizacja wtracen
-        // onGrainBoundrary - czy wtracenia maja sie tworzyc na granicach ziaren
+        // onGrainBoundrary - czy wtracenia maja sie tworzyc na granicach ziaren ale nie na granicy planszy
         public void InitInclusions(bool onGrainBoundrary = false)
         {
             for (int i = 0; i < numberOfInclusions; i++)
@@ -114,8 +114,8 @@ namespace CA
                 }
                 else
                 {
-                    x = random.Next(GRID_DIM);
-                    y = random.Next(GRID_DIM);
+                    x = random.Next(GRID_DIM- sizeOfInclusion);
+                    y = random.Next(GRID_DIM- sizeOfInclusion);
                 }
                 if (shapeOfInclusionComboBox.SelectedIndex == 0)
                 {
@@ -128,7 +128,7 @@ namespace CA
             }
         }
 
-        // Utworz wtracenie o kwadratowym ksztalcie
+        // Utwórz wtracenie o kwadratowym ksztalcie
         private void InitSquareInclusion(int x, int y)
         {
             Color color = RandomColor();
@@ -148,7 +148,7 @@ namespace CA
             }
         }
 
-        // Utrzow wtracenie o okraglym ksztalcie
+        // Utwórz wtracenie o okraglym ksztalcie
         private void InitCircularInclusion(int x, int y)
         {
             Color color = RandomColor();
@@ -388,7 +388,7 @@ namespace CA
             return points;
         }
 
-        // czy punkt jest na granicy ziaren
+        // sprawdź czy punkt jest na granicy ziaren
         private bool IsOnGrainBoundary(int x, int y)
         {
             HashSet<Color> colors = new HashSet<Color>();
@@ -405,7 +405,7 @@ namespace CA
             return colors.Count > 1;
         }
 
-        // Resetuj symulacje / plansze
+        // Resetuj symulacje / plansze oraz ustaw nowe warunki symulacji
         private void Reset()
         {
             if (timer != null)
@@ -433,7 +433,7 @@ namespace CA
             Reset();
         }
 
-        // Eksport to pliku tekstowego
+        // Eksport do pliku tekstowego
         private void ExportToTxtButton_Click(object sender, EventArgs e)
         {
             SaveFileDialog saveFileDialog = new SaveFileDialog();
@@ -462,46 +462,7 @@ namespace CA
             }
         }
 
-        // Eksport to pliku bmp
-        private void exportToBmpButton_Click(object sender, EventArgs e)
-        {
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
-
-            saveFileDialog.Filter = "bmp files (*.bmp)|*.bmp";
-            saveFileDialog.RestoreDirectory = true;
-
-            if (saveFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                Graphics graphics = gridPanel.CreateGraphics();
-                Bitmap bitmap = new Bitmap(gridPanel.Width, gridPanel.Height);
-                gridPanel.DrawToBitmap(bitmap, new Rectangle(0, 0, gridPanel.Width, gridPanel.Height));
-                bitmap.Save(saveFileDialog.FileName);
-            }
-        }
-
         // Import z pliku tekstowego
-        private void importFromBmpButton_Click(object sender, EventArgs e)
-        {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "bmp files (*.bmp)|*.bmp";
-            openFileDialog.RestoreDirectory = true;
-
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                Bitmap bitmap = new Bitmap(openFileDialog.FileName);
-
-                for (int x = 0; x < GRID_DIM; x++)
-                {
-                    for (int y = 0; y < GRID_DIM; y++)
-                    {
-                        grid[x, y].color = bitmap.GetPixel(x, y);
-                    }
-                }
-                gridPanel.Refresh();
-            }
-        }
-
-        // Import z pliku bmp
         private void importFromTxtButton_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -526,6 +487,45 @@ namespace CA
                             int.Parse(values[4]),
                             int.Parse(values[5]));
                         i++;
+                    }
+                }
+                gridPanel.Refresh();
+            }
+        }
+
+        // Eksport przestrzeni do pliku bmp
+        private void exportToBmpButton_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+
+            saveFileDialog.Filter = "bmp files (*.bmp)|*.bmp";
+            saveFileDialog.RestoreDirectory = true;
+
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                Graphics graphics = gridPanel.CreateGraphics();
+                Bitmap bitmap = new Bitmap(gridPanel.Width, gridPanel.Height);
+                gridPanel.DrawToBitmap(bitmap, new Rectangle(0, 0, gridPanel.Width, gridPanel.Height));
+                bitmap.Save(saveFileDialog.FileName);
+            }
+        }
+
+        // Import przestrzeni z pliku bmp
+        private void importFromBmpButton_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "bmp files (*.bmp)|*.bmp";
+            openFileDialog.RestoreDirectory = true;
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                Bitmap bitmap = new Bitmap(openFileDialog.FileName);
+
+                for (int x = 0; x < GRID_DIM; x++)
+                {
+                    for (int y = 0; y < GRID_DIM; y++)
+                    {
+                        grid[x, y].color = bitmap.GetPixel(x * CELL_SIZE, y * CELL_SIZE);
                     }
                 }
                 gridPanel.Refresh();

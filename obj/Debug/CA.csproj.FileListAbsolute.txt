@@ -10,3 +10,9 @@ C:\Users\55678\Desktop\CA1\CA\CA\obj\Debug\CA.pdb
 C:\Users\55678\Desktop\CA\CA\CA\bin\Debug\CA.exe.config
 C:\Users\55678\Desktop\CA\CA\CA\obj\Debug\CA.exe
 C:\Users\55678\Desktop\CA\CA\CA\obj\Debug\CA.pdb
+C:\Users\55678\Desktop\CA\CA\CA\bin\Debug\CA.exe
+C:\Users\55678\Desktop\CA\CA\CA\bin\Debug\CA.pdb
+C:\Users\55678\Desktop\CA\CA\CA\obj\Debug\CA.csprojResolveAssemblyReference.cache
+C:\Users\55678\Desktop\CA\CA\CA\obj\Debug\CA.CAForm.resources
+C:\Users\55678\Desktop\CA\CA\CA\obj\Debug\CA.Properties.Resources.resources
+C:\Users\55678\Desktop\CA\CA\CA\obj\Debug\CA.csproj.GenerateResource.Cache
