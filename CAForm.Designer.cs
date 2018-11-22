@@ -126,7 +126,7 @@
             this.resetButton.TabIndex = 1;
             this.resetButton.Text = "Reset";
             this.resetButton.UseVisualStyleBackColor = true;
-            this.resetButton.Click += new System.EventHandler(this.resetButton_Click);
+            this.resetButton.Click += new System.EventHandler(this.ResetButton_Click);
             // 
             // neighbourhoodTypeLabel
             // 
@@ -181,7 +181,7 @@
             this.exportToBmpButton.TabIndex = 11;
             this.exportToBmpButton.Text = "Export to .bmp file";
             this.exportToBmpButton.UseVisualStyleBackColor = true;
-            this.exportToBmpButton.Click += new System.EventHandler(this.exportToBmpButton_Click);
+            this.exportToBmpButton.Click += new System.EventHandler(this.ExportToBmpButton_Click);
             // 
             // importFromTxtButton
             // 
@@ -192,7 +192,7 @@
             this.importFromTxtButton.TabIndex = 12;
             this.importFromTxtButton.Text = "Import from .txt file";
             this.importFromTxtButton.UseVisualStyleBackColor = true;
-            this.importFromTxtButton.Click += new System.EventHandler(this.importFromTxtButton_Click);
+            this.importFromTxtButton.Click += new System.EventHandler(this.ImportFromTxtButton_Click);
             // 
             // importFromBmpButton
             // 
@@ -203,7 +203,7 @@
             this.importFromBmpButton.TabIndex = 13;
             this.importFromBmpButton.Text = "Import from .bmp file";
             this.importFromBmpButton.UseVisualStyleBackColor = true;
-            this.importFromBmpButton.Click += new System.EventHandler(this.importFromBmpButton_Click);
+            this.importFromBmpButton.Click += new System.EventHandler(this.ImportFromBmpButton_Click);
             // 
             // sizeOfInclusionLabel
             // 
@@ -239,6 +239,7 @@
             this.shapeOfInclusionComboBox.Name = "shapeOfInclusionComboBox";
             this.shapeOfInclusionComboBox.Size = new System.Drawing.Size(211, 21);
             this.shapeOfInclusionComboBox.TabIndex = 18;
+            this.shapeOfInclusionComboBox.SelectedIndexChanged += new System.EventHandler(this.ShapeOfInclusionComboBox_SelectedIndexChanged);
             // 
             // neighbourhoodTypeComboBox
             // 
@@ -270,6 +271,7 @@
             0,
             0,
             0});
+            this.numberOfGrainsNumericUpDown.ValueChanged += new System.EventHandler(this.NumberOfGrainsNumericUpDown_ValueChanged);
             // 
             // numberOfInclusionsNumericUpDown
             // 
@@ -288,6 +290,7 @@
             0,
             0,
             0});
+            this.numberOfInclusionsNumericUpDown.ValueChanged += new System.EventHandler(this.NumberOfInclusionsNumericUpDown_ValueChanged);
             // 
             // sizeOfInclusionNumericUpDown
             // 
@@ -306,6 +309,7 @@
             0,
             0,
             0});
+            this.sizeOfInclusionNumericUpDown.ValueChanged += new System.EventHandler(this.SizeOfInclusionNumericUpDown_ValueChanged);
             // 
             // timeOfCreationOfInclusionsTextBox
             // 
@@ -330,6 +334,7 @@
             this.timeOfCreationOfInclusionsComboBox.Name = "timeOfCreationOfInclusionsComboBox";
             this.timeOfCreationOfInclusionsComboBox.Size = new System.Drawing.Size(211, 21);
             this.timeOfCreationOfInclusionsComboBox.TabIndex = 23;
+            this.timeOfCreationOfInclusionsComboBox.SelectedIndexChanged += new System.EventHandler(this.TimeOfCreationOfInclusionsComboBox_SelectedIndexChanged);
             // 
             // CAForm
             // 

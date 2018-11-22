@@ -4,6 +4,7 @@ using System.Drawing;
 using System.IO;
 using System.Text;
 using System.Windows.Forms;
+using System.Linq;
 
 namespace CA
 {
@@ -63,10 +64,6 @@ namespace CA
             gridPanel.BackColor = Color.Black;
             gridPanel.Paint += GridPanel_Paint;
 
-            neighbourhoodTypeComboBox.SelectedIndex = 0;
-            shapeOfInclusionComboBox.SelectedIndex = 0;
-            timeOfCreationOfInclusionsComboBox.SelectedIndex = 0;
-
             grid = new Cell[GRID_DIM, GRID_DIM];
             for (int i = 0; i < GRID_DIM; i++)
             {
@@ -76,16 +73,27 @@ namespace CA
                 }
             }
 
+            neighbourhoodTypeComboBox.SelectedIndex = 0;
+            shapeOfInclusionComboBox.SelectedIndex = 0;
+            timeOfCreationOfInclusionsComboBox.SelectedIndex = 0;
+
             Reset();
         }
 
         // Poczatkowa inicjalizacja ziaren
         public void InitGrains()
         {
-            for (int i = 0; i < numberOfGrains; i++)
+            int numberOfGrainsAdded = 0;
+
+            while (numberOfGrainsAdded < numberOfGrains)
             {
                 int x = random.Next(GRID_DIM);
                 int y = random.Next(GRID_DIM);
+
+                if (grid[x, y].type != CellType.EMPTY)
+                {
+                    continue;
+                }
 
                 Color color = RandomColor();
 
@@ -93,14 +101,20 @@ namespace CA
                 {
                     grid[x, y] = new Cell(color, CellType.GRAIN);
                 }
+                numberOfGrainsAdded++;
             }
         }
 
         // Inicjalizacja wtracen
-        // onGrainBoundrary - czy wtracenia maja sie tworzyc na granicach ziaren ale nie na granicy planszy
+        // onGrainBoundrary - czy wtracenia maja sie tworzyc na granicach ziaren
         public void InitInclusions(bool onGrainBoundrary = false)
         {
-            for (int i = 0; i < numberOfInclusions; i++)
+            int numberOfInclusionsAdded = 0;
+
+            int tries = 0;
+            int MAX_TRIES = 10000;
+
+            while (numberOfInclusionsAdded < numberOfInclusions)
             {
                 int x;
                 int y;
@@ -114,45 +128,35 @@ namespace CA
                 }
                 else
                 {
-                    x = random.Next(GRID_DIM- sizeOfInclusion);
-                    y = random.Next(GRID_DIM- sizeOfInclusion);
+                    x = random.Next(sizeOfInclusion, GRID_DIM - sizeOfInclusion);
+                    y = random.Next(sizeOfInclusion, GRID_DIM - sizeOfInclusion);
                 }
                 if (shapeOfInclusionComboBox.SelectedIndex == 0)
                 {
-                    InitSquareInclusion(x, y);
+                    if (InitInclusion(x, y, Shape.SQUARE))
+                    {
+                        numberOfInclusionsAdded++;
+                    }
                 }
                 else if (shapeOfInclusionComboBox.SelectedIndex == 1)
                 {
-                    InitCircularInclusion(x, y);
-                }
-            }
-        }
-
-        // Utwórz wtracenie o kwadratowym ksztalcie
-        private void InitSquareInclusion(int x, int y)
-        {
-            Color color = RandomColor();
-
-            for (int dx = -sizeOfInclusion; dx <= sizeOfInclusion; dx++)
-            {
-                for (int dy = -sizeOfInclusion; dy <= sizeOfInclusion; dy++)
-                {
-                    int nx = x + dx;
-                    int ny = y + dy;
-
-                    if (InsideGrid(nx, ny))
+                    if (InitInclusion(x, y, Shape.CIRCULAR))
                     {
-                        grid[nx, ny] = new Cell(color, CellType.INCLUSION);
+                        numberOfInclusionsAdded++;
                     }
                 }
+                tries++;
+                if (tries == MAX_TRIES)
+                {
+                    MessageBox.Show("Can't init inclusions!");
+                }
             }
         }
 
-        // Utwórz wtracenie o okraglym ksztalcie
-        private void InitCircularInclusion(int x, int y)
+        // Utworz wtracenie pojedyczne wtracenie o zadanym ksztalcie
+        private bool InitInclusion(int x, int y, Shape shape)
         {
             Color color = RandomColor();
-
             int r = sizeOfInclusion;
 
             for (int dx = -sizeOfInclusion; dx <= sizeOfInclusion; dx++)
@@ -162,12 +166,38 @@ namespace CA
                     int nx = x + dx;
                     int ny = y + dy;
 
-                    if (InsideGrid(nx, ny) && dx*dx + dy*dy <= r*r)
+                    if (!InsideGrid(nx, ny) || grid[nx, ny].type == CellType.INCLUSION)
+                    {
+                        if (shape == Shape.SQUARE)
+                        {
+                            return false;
+                        }
+                        if (shape == Shape.CIRCULAR && dx * dx + dy * dy <= r * r)
+                        {
+                            return false;
+                        }
+                    }                   
+                }
+            }
+
+            for (int dx = -sizeOfInclusion; dx <= sizeOfInclusion; dx++)
+            {
+                for (int dy = -sizeOfInclusion; dy <= sizeOfInclusion; dy++)
+                {
+                    int nx = x + dx;
+                    int ny = y + dy;
+
+                    if (shape == Shape.SQUARE)
+                    {
+                        grid[nx, ny] = new Cell(color, CellType.INCLUSION);
+                    }
+                    if (shape == Shape.CIRCULAR && dx * dx + dy * dy <= r * r)
                     {
                         grid[nx, ny] = new Cell(color, CellType.INCLUSION);
                     }
                 }
             }
+            return true;
         }
 
         // Krok (klatka) symulacja
@@ -209,21 +239,53 @@ namespace CA
             return true;
         }
 
+        Color MostCommonNeighbourColor(int x, int y)
+        {         
+            Dictionary<Color, int> d = new Dictionary<Color, int>();
+
+            foreach (Point p in Neighbours(x, y))
+            {
+                if (grid[p.X, p.Y].type == CellType.GRAIN)
+                {
+                    Color color = grid[p.X, p.Y].color;
+
+                    if (color == Color.Black)
+                    {
+                        continue;
+                    }
+                    if (!d.ContainsKey(color))
+                    {
+                        d[color] = 0;
+                    }
+                    d[color]++;
+                }
+            }
+            if (d.Count > 0)
+            {
+                Color result = d.OrderByDescending(p => p.Value).First().Key;
+                return result;
+            }
+            else
+            {
+                return Color.Black;
+            }
+        }
+
         // wzrost ziaren
         void GrowGrains()
         {
             Cell[,] gridCopy = CopyGrid(grid);
-
             for (int x = 0; x < GRID_DIM; x++)
             {
                 for (int y = 0; y < GRID_DIM; y++)
                 {
-                    if (CanGrow(x, y))
+                    if (InsideGrid(x, y) && grid[x, y].type == CellType.EMPTY)
                     {
-                        foreach (Point p in Neighbours(x, y))
+                        Color color = MostCommonNeighbourColor(x, y);
+                        if (color != Color.Black)
                         {
-                            gridCopy[p.X, p.Y].color = gridCopy[x, y].color;
-                            gridCopy[p.X, p.Y].type = gridCopy[x, y].type;
+                            gridCopy[x, y].color = color;
+                            gridCopy[x, y].type = CellType.GRAIN;
                         }
                     }
                 }
@@ -261,18 +323,12 @@ namespace CA
             {
                 int nx = x + p.X;
                 int ny = y + p.Y;
-                if (Available(nx, ny))
+                if (InsideGrid(nx, ny))
                 {
                     neighbours.Add(new Point(nx, ny));
                 }
             }
             return neighbours;
-        }
-
-        // czy pole jest dostepne (czyli czy jest puste)
-        private bool Available(int x, int y)
-        {
-            return InsideGrid(x, y) && grid[x, y].type == CellType.EMPTY;
         }
 
         // czy pole jest na planszy
@@ -333,6 +389,11 @@ namespace CA
             if (timer != null)
             {
                 timer.Stop();
+                Reset();
+            }
+            if (IsGridFull())
+            {
+                Reset();
             }
             timer = new Timer();
             timer.Interval = 100;
@@ -388,7 +449,7 @@ namespace CA
             return points;
         }
 
-        // sprawdź czy punkt jest na granicy ziaren
+        // czy punkt jest na granicy ziaren
         private bool IsOnGrainBoundary(int x, int y)
         {
             HashSet<Color> colors = new HashSet<Color>();
@@ -405,7 +466,7 @@ namespace CA
             return colors.Count > 1;
         }
 
-        // Resetuj symulacje / plansze oraz ustaw nowe warunki symulacji
+        // Resetuj symulacje / plansze
         private void Reset()
         {
             if (timer != null)
@@ -428,12 +489,12 @@ namespace CA
         }
 
         // akcja wykonywana po nacisnieciu przycisku Reset
-        private void resetButton_Click(object sender, EventArgs e)
+        private void ResetButton_Click(object sender, EventArgs e)
         {
             Reset();
         }
 
-        // Eksport do pliku tekstowego
+        // Eksport to pliku tekstowego
         private void ExportToTxtButton_Click(object sender, EventArgs e)
         {
             SaveFileDialog saveFileDialog = new SaveFileDialog();
@@ -463,7 +524,7 @@ namespace CA
         }
 
         // Import z pliku tekstowego
-        private void importFromTxtButton_Click(object sender, EventArgs e)
+        private void ImportFromTxtButton_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Filter = "txt files (*.txt)|*.txt";
@@ -493,8 +554,8 @@ namespace CA
             }
         }
 
-        // Eksport przestrzeni do pliku bmp
-        private void exportToBmpButton_Click(object sender, EventArgs e)
+        // Eksport to pliku bmp
+        private void ExportToBmpButton_Click(object sender, EventArgs e)
         {
             SaveFileDialog saveFileDialog = new SaveFileDialog();
 
@@ -510,8 +571,8 @@ namespace CA
             }
         }
 
-        // Import przestrzeni z pliku bmp
-        private void importFromBmpButton_Click(object sender, EventArgs e)
+        // Import z pliku bmp
+        private void ImportFromBmpButton_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Filter = "bmp files (*.bmp)|*.bmp";
@@ -530,6 +591,31 @@ namespace CA
                 }
                 gridPanel.Refresh();
             }
+        }
+
+        private void NumberOfGrainsNumericUpDown_ValueChanged(object sender, EventArgs e)
+        {
+            Reset();
+        }
+
+        private void NumberOfInclusionsNumericUpDown_ValueChanged(object sender, EventArgs e)
+        {
+            Reset();
+        }
+
+        private void SizeOfInclusionNumericUpDown_ValueChanged(object sender, EventArgs e)
+        {
+            Reset();
+        }
+
+        private void ShapeOfInclusionComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            Reset();
+        }
+
+        private void TimeOfCreationOfInclusionsComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            Reset();
         }
     }
 }
